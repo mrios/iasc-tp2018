@@ -1,2 +1,13 @@
 # iasc-tp2018
-Cola de mensajes distribuidos. Trabajo practico de Implementacion de arquitecturas de software concurrentes.
+Distributed Messages Queue for "Implementacion de arquitecturas de software concurrentes".
+Dockerized Node.js+ZeroMQ
+
+# Prerequisites
+
+- Node.js > 10.14.2
+- Docker
+- docker-compose
+
+# Usage
+
+```docker-compose up```
