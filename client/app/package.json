@@ -1,0 +1,14 @@
+{
+  "name": "zeromq-client",
+  "version": "1.0.0",
+  "description": "Client for Distributed Messages Queue",
+  "main": "client.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Rios Matias",
+  "license": "MIT",
+  "devDependencies": {
+    "zeromq": "^5.1.0"
+  }
+}
