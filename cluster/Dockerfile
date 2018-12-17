@@ -6,5 +6,5 @@ RUN rm -rf node_modules && \
 	apt-get install -y -qq libzmq3-dev && \ 
 	npm install --silent
 
-EXPOSE 3000
-CMD ["node", "/app/server.js"]
+EXPOSE 3300
+CMD ["node", "/app/cluster.js"]

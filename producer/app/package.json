@@ -1,8 +1,8 @@
 {
-  "name": "zeromq-server",
+  "name": "zeromq-producer",
   "version": "1.0.0",
-  "description": "Server for Distributed Messages Queue",
-  "main": "server.js",
+  "description": "Producer for Distributed Messages Queue",
+  "main": "producer.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

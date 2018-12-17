@@ -1,8 +1,8 @@
 {
-  "name": "zeromq-client",
+  "name": "zeromq-pub",
   "version": "1.0.0",
-  "description": "Client for Distributed Messages Queue",
-  "main": "client.js",
+  "description": "Publisher for Distributed Messages Queue",
+  "main": "publisher.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
