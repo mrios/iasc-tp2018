@@ -1,6 +1,6 @@
 var cluster = require('cluster')
   , zmq = require('zeromq')
-  , port = 'tcp://127.0.0.1:12345';
+  , port = 'tcp://127.0.0.1:12346';
 
 
 
