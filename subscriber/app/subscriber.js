@@ -1,19 +1,11 @@
-var zmq = require('zeromq')
-var subscriber = zmq.socket('sub')
-zmq = require('zeromq')
-  , port = 'tcp://127.0.0.1:12345';
-  
-var socket = zmq.socket('sub');
+// subscriber.js
+var zmq = require('zeromq');
+var sock = zmq.socket('sub');
 
-  socket.identity = 'subscriber' + process.pid;
-  
-  socket.connect(port);
-  
-  socket.subscribe('AAPL');
-  socket.subscribe('GOOG');
-
-  console.log('connected!');
-
-  socket.on('message', function(data) {
-    console.log(socket.identity + ': received data ' + data.toString());
-  });
+sock.identity = 'subscriber' + process.pid;
+sock.connect('tcp://127.0.0.1:5555');
+sock.subscribe('A');
+sock.subscribe('B');
+sock.on('message', function(data) {
+ console.log(data.toString());
+});

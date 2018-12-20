@@ -1,25 +1,22 @@
-var cluster = require('cluster')
-  , zmq = require('zeromq')
-  , port = 'tcp://127.0.0.1:12346';
+// publisher2.js
+var zmq = require('zeromq');
+var socket = zmq.socket('pub');
+const address = process.env.ZMQ_PRODUCER_ADDRESS || 'tcp://127.0.0.1:5556';
+const interval = process.env.ZMQ_PRODUCER_INTERVAL || 2000;
+socket.identity = 'publisher' + process.pid;
+socket.connect(address);
+var stocks = ['B', 'D'];
 
+setInterval(function(){
+	var symbol = stocks[Math.floor(Math.random()*stocks.length)];
+	sendMessage(symbol + ' here is the info');
+}, interval);
 
+function logToConsole (message) {
+    console.log("[" + new Date().toLocaleTimeString() + "] " + message);
+}
 
-  //publisher = send only
-  var socket = zmq.socket('pub');
-
-  socket.identity = 'publisher' + process.pid;
-  
-  var stocks = ['AAPL', 'GOOG', 'YHOO', 'MSFT', 'INTC'];
-
-  socket.bind(port, function(err) {
-    if (err) throw err;
-    console.log('bound!');
-    
-    setInterval(function() {
-      var symbol = stocks[Math.floor(Math.random()*stocks.length)]
-        , value = Math.random()*1000;
-
-      console.log(socket.identity + ': sent ' + symbol + ' ' + value);
-      socket.send(symbol + ' ' + value);
-    }, 1000);
-});
+function sendMessage (message) {
+    logToConsole("Sending: " + message);
+    socket.send(message);
+}
