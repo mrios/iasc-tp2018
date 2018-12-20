@@ -1,0 +1,19 @@
+{
+  "name": "queue-manager",
+  "version": "1.0.0",
+  "description": "Manager for Distributed Messages Queue, builds a HTTP API",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Rios Matias",
+  "license": "MIT",
+  "devDependencies": {
+    "zeromq": "^5.1.0",
+    "express": "^4.16.3",
+    "body-parser": "^1.18.3",
+    "cors": "^2.8.4",
+    "bee-queue": "^1.2.2",
+    "lodash": "^4.17.10"
+  }
+}

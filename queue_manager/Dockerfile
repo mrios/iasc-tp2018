@@ -6,5 +6,5 @@ RUN rm -rf node_modules && \
 	apt-get install -y -qq libzmq3-dev && \ 
 	npm install --silent
 
-EXPOSE 3000
-CMD ["node", "/app/producer.js"]
+EXPOSE 9000
+CMD ["node", "/app/main.js"]
