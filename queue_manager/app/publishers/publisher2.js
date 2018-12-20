@@ -1,13 +1,11 @@
 var cluster = require('cluster')
   , zmq = require('zeromq')
-  , port = 'tcp://127.0.0.1:12346';
-
-
+  , port = 'tcp://127.0.0.1:5559';
 
   //publisher = send only
   var socket = zmq.socket('pub');
 
-  socket.identity = 'publisher' + process.pid;
+  socket.identity = 'publisher2';
   
   var stocks = ['AAPL', 'GOOG', 'YHOO', 'MSFT', 'INTC'];
 

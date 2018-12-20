@@ -1,19 +1,29 @@
 const Queue = require('bee-queue');
 const _ = require('lodash');
 const zmq = require('zeromq');
-const subscriber = zmq.socket('sub')
-const port = 'tcp://127.0.0.1:12345';
   
-subscriber.identity = 'subscriber' + process.pid;
-subscriber.connect(port);
+//  Socket facing clients
+var xsubProducers = zmq.socket('xsub');
+//var xsubProducers = zmq.socket('router');
+console.log('binding xsubProducers...');
+//xsubProducers.bindSync('tcp://*:5559');
+xsubProducers.bind('tcp://*:5559');
 
-subscriber.subscribe('A');
-subscriber.subscribe('B');
-subscriber.subscribe('C');
+//  Socket facing services
+var xpubClients = zmq.socket('xpub');
+//var xpubClients = zmq.socket('dealer');
+console.log('binding xpubClients...');
+//xpubClients.bindSync('tcp://*:5560');
+xpubClients.bind('tcp://*:5560');
 
-subscriber.on('message', function(topic, msg) {
-    console.log(`Topic: ${topic}, msg: ${msg}`)
-});
+//  Start the proxy
+console.log('starting proxy...');
+zmq.proxy(xpubClients, xsubProducers, null);
+
+process.on('SIGINT', function() {
+    xpubProducers.close();
+    xpubClients.close();
+})
 
 class QueueManager {
     

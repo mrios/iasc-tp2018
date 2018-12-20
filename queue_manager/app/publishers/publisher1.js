@@ -1,6 +1,6 @@
 // publisher1.js
 const zmq = require('zeromq')
-const port = 'tcp://127.0.0.1:12345';
+const port = 'tcp://127.0.0.1:5559';
 const socket = zmq.socket('pub');
 
 socket.identity = 'publisher1';
