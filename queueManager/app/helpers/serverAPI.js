@@ -61,7 +61,6 @@ const Server = {
 				value: req.params.name
 			}
 			const queue= QueueManager.findOneQueueBy(filter);
-			console.log(queue);
 			if(_.isUndefined(queue)) {
 				res.status(404).json({message: `Queue with id: ${filter.value} not found`});
 			}
