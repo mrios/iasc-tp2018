@@ -10,7 +10,7 @@ class ServerArena {
     }
 
     init(config) {
-        console.log('---- Arena init ----', config);
+        console.log('---- Arena init ----');
         const arena = Arena(config);
         router.use('/arena', arena);
     }
