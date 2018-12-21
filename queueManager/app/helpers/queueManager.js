@@ -28,7 +28,10 @@ class QueueManager {
             pubSock.bindSync(configProxy.pubListener);
             subSock.on('message', (...args) => {
 				if(!this.findOneQueueBy({field: 'name', value: args[0]}))
+				{	
 					this.createQueue({name: args[0]});
+				}
+				//TODO: Agregar mensaje args[1] a la cola {name: args[0]}
 				pubSock.send(args)
 			});
             pubSock.on('message', function(data, bla) {
@@ -36,6 +39,7 @@ class QueueManager {
                 var channel = data.slice(1).toString();
                 console.log(type + ':' + channel);
                 subSock.send(data);
+				//TODO quitar elemento de la cola
             }); 
         }
         else {
