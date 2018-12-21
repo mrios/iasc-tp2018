@@ -15,5 +15,8 @@
     "cors": "^2.8.4",
     "bee-queue": "^1.2.2",
     "lodash": "^4.17.10"
+  },
+  "dependencies": {
+    "bull-arena": "^2.5.2"
   }
 }
