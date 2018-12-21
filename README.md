@@ -15,4 +15,8 @@ Technoligies:
 
 # Usage
 
-```docker-compose up```
+Go to /queueManager/app
+```npm install```
+```node main.js```
+
+URL Arena http://0.0.0.0:4567
