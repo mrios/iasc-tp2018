@@ -32,8 +32,8 @@ class ConsumerGenerator {
 
     }
 
-    getRandomTopic(configConsumers) {
-        return configConsumers.stocks[Math.floor(Math.random()*configConsumers.stocks.length)]
+    getRandomTopic(topics) {
+        return topics[Math.floor(Math.random()*topics.length)]
     }
 }
 
