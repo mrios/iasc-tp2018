@@ -41,6 +41,7 @@ class QueueManager {
                 
                 console.log(`Type: ${type} : ${topic}`);
                 subSock.send(data);
+				//TODO quitar elemento de la cola
             }); 
         }
         else {
