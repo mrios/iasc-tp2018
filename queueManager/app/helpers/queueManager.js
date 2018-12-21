@@ -26,7 +26,11 @@ class QueueManager {
 
             pubSock.setsockopt(zmq.ZMQ_XPUB_VERBOSE, configProxy.verbose);
             pubSock.bindSync(configProxy.pubListener);
-            subSock.on('message', (...args) => pubSock.send(args));
+            subSock.on('message', (...args) => {
+				if(!this.findOneQueueBy({field: 'name', value: args[0]}))
+					this.createQueue({name: args[0]});
+				pubSock.send(args)
+			});
             pubSock.on('message', function(data, bla) {
                 var type = data[0]===0 ? 'unsubscribe' : 'subscribe';
                 var channel = data.slice(1).toString();
