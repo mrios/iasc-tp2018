@@ -21,7 +21,7 @@ const Server = {
 	app.use(cors());
 
 	// Init Queue Manager
-	QueueManager.init(config.queue);
+	QueueManager.init(config);
 
 	/*********************/
 	/*** HTTP API REST ***/
@@ -45,8 +45,8 @@ const Server = {
 	// Get queues status
 	app.get('/api/queue', (req, res) => {
 		try {
-			const colas = QueueManager.findAllQueue();
-			res.status(200).json(colas);
+			const queue = QueueManager.findAllQueue();
+			res.status(200).json(queue);
 		} catch (error) {
 			console.log(`e: ${error}`)
 			res.status(400).json({message: `Error trying to get queues`, error: `${error}`});
@@ -60,12 +60,12 @@ const Server = {
 				field: 'id', 
 				value: req.params.id
 			}
-			const cola = QueueManager.findOneQueueBy(filter);
-			if(_.isUndefined(cola)) {
+			const queue= QueueManager.findOneQueueBy(filter);
+			if(_.isUndefined(queue)) {
 				res.status(404).json({message: `Queue with id: ${filter.value} not found`});
 			}
 			else {
-				res.status(200).json(cola);
+				res.status(200).json(queue);
 			}
 		} catch (error) {
 			console.log(`e: ${error}`)
@@ -76,8 +76,8 @@ const Server = {
 	// Create a queue
 	app.post('/api/queue', (req, res) => {
 		try {
-			const nuevaCola = QueueManager.createQueue(req.body);
-			res.status(200).json(nuevaCola);
+			const nweQueue= QueueManager.createQueue(req.body);
+			res.status(200).json(newQueue);
 		} catch (error) {
 			console.log(`e: ${error}`)
 			res.status(400).json({message: `Error trying to create a queue`, error: `${error}`});

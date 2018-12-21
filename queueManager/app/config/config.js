@@ -49,10 +49,10 @@ module.exports = {
     // DB Cluster for bee-queue
     cluster: {
         redis: {
-            host: 'http://',
-            port: '',
-            db: '',
-            password: ''
+            host: '127.0.0.1',
+            port: 6379,
+            db: 0,
+            options: {}
         },
         nodes: [
             {

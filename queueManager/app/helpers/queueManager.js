@@ -8,8 +8,10 @@ class QueueManager {
 
     init(config) {
         let queueStore = [];
+        let queueConfig = {};
         this.setQueuesStore([]);
-        this.initProxy(config.proxy);
+        this.initProxy(config.queue.proxy);
+        this.setQueueConfig(config.cluster.redis);
     }
 
     // Private methods
@@ -26,17 +28,47 @@ class QueueManager {
 
             pubSock.setsockopt(zmq.ZMQ_XPUB_VERBOSE, configProxy.verbose);
             pubSock.bindSync(configProxy.pubListener);
-            subSock.on('message', (...args) => pubSock.send(args));
-            pubSock.on('message', function(data, bla) {
+            subSock.on('message', (data) => pubSock.send(data));
+            pubSock.on('message', (data, bla) => {
                 var type = data[0]===0 ? 'unsubscribe' : 'subscribe';
-                var channel = data.slice(1).toString();
-                console.log(type + ':' + channel);
+                var topic = data.slice(1).toString();
+
+                let beeQFound = this.findOneQueueBy({field: 'name', value: topic});
+                if(!beeQFound) {
+                    beeQFound = this.createQueue({name: topic});
+                }
+                this.createJob(beeQFound, data);
+                
+                console.log(`Type: ${type} : ${topic}`);
                 subSock.send(data);
             }); 
         }
         else {
             console.log('...WIP')
         }
+    }
+
+    getQueueConfig() {
+        return this.queueConfig;
+    }
+
+    setQueueConfig(redis) {
+        this.queueConfig = {
+            prefix: 'bq',
+            stallInterval: 5000,
+            nearTermWindow: 1200000,
+            delayedDebounce: 1000,
+            redis: redis,
+            isWorker: true,
+            getEvents: true,
+            sendEvents: true,
+            storeJobs: true,
+            ensureScripts: true,
+            activateDelayedJobs: false,
+            removeOnSuccess: false,
+            removeOnFailure: false,
+            redisScanCount: 100
+        };
     }
 
     getQueuesStore() {
@@ -51,9 +83,9 @@ class QueueManager {
         this.queueStore.push(q);
     }
 
-    removeQ(id) {
+    removeQ(name) {
         this.setQueuesStore(_.reject(this.getQueuesStore(), (o) => {
-            return o.id === id;
+            return o.name === name;
         }));
     }
 
@@ -77,17 +109,14 @@ class QueueManager {
     }
     
     createQueue(data) {
-        const newQueue = new Queue(data.name, {isWorker: false});
-        //const newQueue = data;
-        this.addQ(newQueue);
-        return {
-            queue: newQueue
-        }
+        const newQueue = new Queue(data.name, this.getQueueConfig());
+        this.addQ({name: data.name, beeQ: newQueue});
+        return newQueue;
     }
     
-    removeQueue(id) {
-        this.removeQ(id);
-        const found = this.findOneQueueBy({field: 'id', value: id});
+    removeQueue(name) {
+        this.removeQ(name);
+        const found = this.findOneQueueBy({field: 'name', value: name});
         if(!_.isObject(found)) {
             return `Queue with id: ${id} deleted succesfully`
         }
@@ -95,6 +124,17 @@ class QueueManager {
             return `Queue with id: ${id} not found`
         }
         
+    }
+
+    createJob(beeQ, msg) {
+        const job = beeQ.createJob({msg: msg});
+        job
+            .timeout(3000)
+            .retries(2)
+            .save()
+            .then((job) => {
+                // job enqueued, job.id populated
+            });
     }
 }
 
