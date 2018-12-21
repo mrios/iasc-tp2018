@@ -1,4 +1,3 @@
-let port = 4000;
 let express = require('express');
 let app = express();
 let cors = require('cors');
@@ -6,11 +5,11 @@ let server = require('http').createServer(app);
 const bodyParser = require('body-parser');
 let _ = require('lodash');
 
-const QueueManager = require('./queue_manager.js');
+const QueueManager = require('./queueManager.js');
 
 const Server = {
 
-  init: () => {
+  init: (config) => {
 
     // Config Server Format
 	app.use(bodyParser.urlencoded({
@@ -20,6 +19,9 @@ const Server = {
 
     // Enable CORS
 	app.use(cors());
+
+	// Init Queue Manager
+	QueueManager.init(config.queue);
 
 	/*********************/
 	/*** HTTP API REST ***/
@@ -94,12 +96,10 @@ const Server = {
 	});
 
     // Start server
-    server.listen(port, () => {
-    	console.log("Listening on port: %d", port);
+    server.listen(config.serverAPI.port, () => {
+    	console.log("Listening on port: %d", config.serverAPI.port);
     });
   }
 };
-
-Server.init();
 
 module.exports = Server;

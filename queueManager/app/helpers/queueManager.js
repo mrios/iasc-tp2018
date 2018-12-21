@@ -1,38 +1,44 @@
 const Queue = require('bee-queue');
 const _ = require('lodash');
 const zmq = require('zeromq');
-  
-//  Socket facing clients
-var xsubProducers = zmq.socket('xsub');
-//var xsubProducers = zmq.socket('router');
-console.log('binding xsubProducers...');
-//xsubProducers.bindSync('tcp://*:5559');
-xsubProducers.bind('tcp://*:5559');
-
-//  Socket facing services
-var xpubClients = zmq.socket('xpub');
-//var xpubClients = zmq.socket('dealer');
-console.log('binding xpubClients...');
-//xpubClients.bindSync('tcp://*:5560');
-xpubClients.bind('tcp://*:5560');
-
-//  Start the proxy
-console.log('starting proxy...');
-zmq.proxy(xpubClients, xsubProducers, null);
-
-process.on('SIGINT', function() {
-    xpubProducers.close();
-    xpubClients.close();
-})
 
 class QueueManager {
     
-    constructor() {
+    constructor() {}
+
+    init(config) {
         let queueStore = [];
         this.setQueuesStore([]);
+        this.initProxy(config.proxy);
     }
 
     // Private methods
+    initProxy(configProxy) {
+
+        if(configProxy.mode === 'xsub/xpub') {
+            var subSock = zmq.socket('xsub');
+            subSock.identity = 'subscriber' + process.pid;
+            subSock.bindSync(configProxy.subListener);
+
+            var pubSock = zmq.socket('xpub');
+            pubSock.identity = 'publisher' + process.pid;
+            pubSock.setsockopt(zmq.ZMQ_SNDHWM, configProxy.hwm);
+
+            pubSock.setsockopt(zmq.ZMQ_XPUB_VERBOSE, configProxy.verbose);
+            pubSock.bindSync(configProxy.pubListener);
+            subSock.on('message', (...args) => pubSock.send(args));
+            pubSock.on('message', function(data, bla) {
+                var type = data[0]===0 ? 'unsubscribe' : 'subscribe';
+                var channel = data.slice(1).toString();
+                console.log(type + ':' + channel);
+                subSock.send(data);
+            }); 
+        }
+        else {
+            console.log('...WIP')
+        }
+    }
+
     getQueuesStore() {
         return this.queueStore;
     }
