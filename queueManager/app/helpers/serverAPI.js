@@ -54,13 +54,14 @@ const Server = {
 	});
 
 	// Get queues status for one queue by filter in body request
-	app.get('/api/queue/:id', (req, res) => {
+	app.get('/api/queue/:name', (req, res) => {
 		try {
 			const filter = {
-				field: 'id', 
-				value: req.params.id
+				field: 'name', 
+				value: req.params.name
 			}
 			const queue= QueueManager.findOneQueueBy(filter);
+			console.log(queue);
 			if(_.isUndefined(queue)) {
 				res.status(404).json({message: `Queue with id: ${filter.value} not found`});
 			}
