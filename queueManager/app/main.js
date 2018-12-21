@@ -31,7 +31,6 @@ class Main {
 
         setTimeout( () => {
             /*** Init Arena Server ***/
-            console.log('arena', arena)
             const sa = new ServerArena(arena);
         } , 1000)
     }
