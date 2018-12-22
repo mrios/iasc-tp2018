@@ -21,7 +21,7 @@ class ProducerGenerator {
         
             setInterval(() => {
                 const topic = this.getRandomTopic(configProducers.topics)
-                , msg = Math.random()*1000;
+                , msg = `The magical number is: ${Math.random()*1000}`;
                 console.log(producer.identity + ': sent ' + topic + ' ' + msg);
                 producer.send([topic, msg]);
             }, configProducers.interval);

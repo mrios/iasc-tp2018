@@ -51,8 +51,8 @@ class QueueManager {
                 if(!beeQFound) {
                     beeQFound = this.createQueue({name: topic});
                 }
-                this.createJob(beeQFound, msg);
-				xpubSock.send([topic, msg]);
+                this.createJob(beeQFound, msg.toString('utf8'));
+                xpubSock.send([topic, msg]);
             });
 
             // Set Listener for xpub
