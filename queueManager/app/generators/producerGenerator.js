@@ -21,9 +21,9 @@ class ProducerGenerator {
         
             setInterval(() => {
                 const topic = this.getRandomTopic(configProducers.topics)
-                , value = Math.random()*1000;
-                console.log(producer.identity + ': sent ' + topic + ' ' + value);
-                producer.send([topic, value]);
+                , msg = Math.random()*1000;
+                console.log(producer.identity + ': sent ' + topic + ' ' + msg);
+                producer.send([topic, msg]);
             }, 1000);
         }
         else {

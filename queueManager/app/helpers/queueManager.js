@@ -28,7 +28,9 @@ class QueueManager {
 
             pubSock.setsockopt(zmq.ZMQ_XPUB_VERBOSE, configProxy.verbose);
             pubSock.bindSync(configProxy.pubListener);
-            subSock.on('message', (data) => pubSock.send(data));
+            subSock.on('message', (topic, msg) => {
+				pubSock.send([topic, msg]);
+			});
             pubSock.on('message', (data, bla) => {
                 var type = data[0]===0 ? 'unsubscribe' : 'subscribe';
                 var topic = data.slice(1).toString();
