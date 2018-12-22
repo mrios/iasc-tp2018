@@ -27,7 +27,7 @@ class Main {
         // ConsumerGenerator.init(config.pubSub.consumers);
         // ProductorGenerator.init(config.pubSub.productors);
         
-        /*** Creates Consumers & Producers for Push/Pull ***/
+        /*** Creates Consumers & Producers for Pub/Sub ***/
         ConsumerGenerator.init(config.pubSub.consumers);
         ProductorGenerator.init(config.pubSub.producers);
     }
