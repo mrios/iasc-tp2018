@@ -19,6 +19,9 @@ class Main {
             cluster: config.cluster
         });
 
+        /*** Init Arena Server ***/
+        const sa = new ServerArena(arena);
+
         /*** Creates Consumers & Producers for Push/Pull ***/
         
         // ConsumerGenerator.init(config.pubSub.consumers);
@@ -27,12 +30,6 @@ class Main {
         /*** Creates Consumers & Producers for Push/Pull ***/
         ConsumerGenerator.init(config.pubSub.consumers);
         ProductorGenerator.init(config.pubSub.producers);
-
-
-        setTimeout( () => {
-            /*** Init Arena Server ***/
-            const sa = new ServerArena(arena);
-        } , 1000)
     }
 }
 
