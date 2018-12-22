@@ -21,7 +21,8 @@ class ConsumerGenerator {
             consumer.subscribe(this.getRandomTopic(configConsumers.topics));
 			ackPubSock.connect('tcp://127.0.0.1:5559');
             consumer.on('message', function(topic, msg) {
-				ackPubSock.send(['A', index]);
+				var jobId = msg.toString().substr(0,8);
+				ackPubSock.send(['A', jobId + consumer.identity]);
                 console.log(`Consumer-${index}, Received Topic: ${topic}, msg: ${msg}`);
             });
         }

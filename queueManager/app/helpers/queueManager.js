@@ -69,7 +69,8 @@ class QueueManager {
         
 			// Set Listener for ACK Receiver
 			ackSubSock.on('message', function(topic, msg) {
-                console.log('msg: ' + msg);
+				var jobId = msg.toString().substr(0,8);
+				var consumerId = msg.toString().substr(8);
             });
 		}
         else {
@@ -164,7 +165,8 @@ class QueueManager {
             .save()
             .then((job) => {
                 // job enqueued, job.id populated
-				xpubSock.send([topic, this.padJobId(job.id) + msg]);
+				var msgWithId =  this.padJobId(job.id) + msg;
+				xpubSock.send([topic, msgWithId]);
             });
     }
 }
