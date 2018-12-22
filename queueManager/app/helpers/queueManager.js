@@ -45,6 +45,13 @@ class QueueManager {
 
             // Set Listener for xsub
             xsubSock.on('message', (topic, msg) => {
+
+                // Store messages as jobs in the BeeQueue by topic, 1 topic <---> 1 beeQueue
+                let beeQFound = this.findOneQueueBy({field: 'name', value: topic});
+                if(!beeQFound) {
+                    beeQFound = this.createQueue({name: topic});
+                }
+                this.createJob(beeQFound, msg);
 				xpubSock.send([topic, msg]);
             });
 
@@ -53,18 +60,9 @@ class QueueManager {
                 
                 var type = data[0]===0 ? 'unsubscribe' : 'subscribe';
                 var topic = data.slice(1).toString();
-                
-                // Store messages as jobs in the BeeQueue by topic, 1 topic <---> 1 beeQueue
-                let beeQFound = this.findOneQueueBy({field: 'name', value: topic});
-                if(!beeQFound) {
-                    beeQFound = this.createQueue({name: topic});
-                }
-                this.createJob(beeQFound, data);
-                
                 console.log(`Type: ${type} : ${topic}`);
                 xsubSock.send(data);
-
-				//TODO quitar elemento de la cola
+                //TODO quitar elemento de la cola
             }); 
         }
         else {
