@@ -4,15 +4,20 @@ Technoligies:
     - Docker
     - ZeroMQ
     - NodeJS
-    - Nginx
     - BeeQueue
 
 # Prerequisites
 
 - Node.js > 10.14.2
-- Docker
-- docker-compose
+- Redis
 
 # Usage
 
-```docker-compose up```
+First run Redis Server
+
+Go to /queueManager/app
+
+```npm install```
+```node main.js```
+
+URL Arena http://0.0.0.0:4567
