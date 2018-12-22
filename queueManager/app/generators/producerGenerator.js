@@ -24,7 +24,7 @@ class ProducerGenerator {
                 , msg = Math.random()*1000;
                 console.log(producer.identity + ': sent ' + topic + ' ' + msg);
                 producer.send([topic, msg]);
-            }, 1000);
+            }, configProducers.interval);
         }
         else {
             producer.connect(configProducers.host);
