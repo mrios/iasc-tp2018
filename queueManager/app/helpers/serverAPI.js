@@ -60,7 +60,7 @@ const Server = {
 				field: 'name', 
 				value: req.params.name
 			}
-			const queue= QueueManager.findOneQueueBy(filter);
+			const queue= QueueManager.findOneQueueBy(filter); //OJO esto devuelve name y beeQ, elegir solo beeq? => const queue= QueueManager.findOneQueueBy(filter).beeQ;
 			if(_.isUndefined(queue)) {
 				res.status(404).json({message: `Queue with id: ${filter.value} not found`});
 			}
@@ -94,7 +94,28 @@ const Server = {
 			res.status(400).json({message: `Error trying to delete a queue`, error: `${error}`});
 		}
 	});
+	
+	/*** MQs: Message Topic ***/
 
+	// Get topic address
+	app.get('/api/topic/:name', (req, res) => {
+		try {
+			const filter = {
+				field: 'name', 
+				value: req.params.name
+			}
+			const queue= QueueManager.findOneQueueBy(filter).beeQ.client.address;
+			if(_.isUndefined(queue)) {
+				res.status(404).json({message: `Topic with id: ${filter.value} not found`});
+			}
+			else {
+				res.status(200).json(queue);
+			}
+		} catch (error) {
+			console.log(`e: ${error}`)
+			res.status(400).json({message: `Error trying to get a topic by: ${filter}`, error: `${error}`});
+		}
+	});
     // Start server
     server.listen(config.serverAPI.port, () => {
     	console.log("Listening on port: %d", config.serverAPI.port);
