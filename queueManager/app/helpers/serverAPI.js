@@ -45,8 +45,29 @@ const Server = {
 	// Get queues status
 	app.get('/api/queue', (req, res) => {
 		try {
-			const queue = QueueManager.findAllQueue();
-			res.status(200).json(queue);
+			const queues = QueueManager.findAllQueue();
+			const qsPromises = queues.map((queue) => {
+				return {
+					name: queue.name,
+					jobs: queue.beeQ.checkHealth(),
+					host: queue.beeQ.client.address,
+					settings: queue.beeQ.settings
+				}
+			});
+			Promise.all(
+				qsPromises.map(
+					// For each queue call the Promise
+					queueParsed => queueParsed.jobs.then(
+						// When the jobs promise is resolved, update queueParsed
+						jobs => {
+							queueParsed.jobs = jobs;
+							return {...queueParsed}
+						}
+					)
+				)
+			).then(results => {
+				res.status(200).json(results);
+			});
 		} catch (error) {
 			console.log(`e: ${error}`)
 			res.status(400).json({message: `Error trying to get queues`, error: `${error}`});
@@ -55,28 +76,35 @@ const Server = {
 
 	// Get queues status for one queue by filter in body request
 	app.get('/api/queue/:name', (req, res) => {
+		const filter = {
+			field: 'name',
+			value: req.params.name
+		}
 		try {
-			const filter = {
-				field: 'name', 
-				value: req.params.name
-			}
-			const queue= QueueManager.findOneQueueBy(filter); //OJO esto devuelve name y beeQ, elegir solo beeq? => const queue= QueueManager.findOneQueueBy(filter).beeQ;
+			const queue = QueueManager.findOneQueueBy(filter);
 			if(_.isUndefined(queue)) {
-				res.status(404).json({message: `Queue with id: ${filter.value} not found`});
+				res.status(404).json({message: `Queue with name: ${filter.value} not found`});
 			}
 			else {
-				res.status(200).json(queue);
+				queue.beeQ.checkHealth().then((jobs) => {
+					res.status(200).json({
+						name: queue.name,
+						host: queue.beeQ.client.address,
+						jobs: jobs,
+						settings: queue.beeQ.settings
+					});
+				});
 			}
 		} catch (error) {
 			console.log(`e: ${error}`)
-			res.status(400).json({message: `Error trying to get a queue by: ${filter}`, error: `${error}`});
+			res.status(400).json({message: `Error trying to get a queue by {${filter.field} : ${filter.value}}`, error: `${error}`});
 		}
 	});
 
 	// Create a queue
 	app.post('/api/queue', (req, res) => {
 		try {
-			const nweQueue= QueueManager.createQueue(req.body);
+			const newQueue= QueueManager.createQueue(req.body);
 			res.status(200).json(newQueue);
 		} catch (error) {
 			console.log(`e: ${error}`)
@@ -99,21 +127,21 @@ const Server = {
 
 	// Get topic address
 	app.get('/api/topic/:name', (req, res) => {
+		const filter = {
+			field: 'name',
+			value: req.params.name
+		}
 		try {
-			const filter = {
-				field: 'name', 
-				value: req.params.name
-			}
-			const queue= QueueManager.findOneQueueBy(filter).beeQ.client.address;
+			const queue= QueueManager.findOneQueueBy(filter);
 			if(_.isUndefined(queue)) {
-				res.status(404).json({message: `Topic with id: ${filter.value} not found`});
+				res.status(404).json({message: `Queue with topic: ${filter.value} not found`});
 			}
 			else {
-				res.status(200).json(queue);
+				res.status(200).json({host: queue.beeQ.client.address});
 			}
 		} catch (error) {
 			console.log(`e: ${error}`)
-			res.status(400).json({message: `Error trying to get a topic by: ${filter}`, error: `${error}`});
+			res.status(400).json({message: `Error trying to get a topic by {${filter.field} : ${filter.value}}`, error: `${error}`});
 		}
 	});
     // Start server

@@ -47,7 +47,7 @@ class QueueManager {
             }); 
         }
         else {
-            console.log('...WIP')
+            console.log('...WIP...')
         }
     }
 
@@ -95,14 +95,12 @@ class QueueManager {
     // Public methods
     getStatus() {
         return {
-            queues: this.queueStore
+            queues: this.findAllQueue()
         }
     }
 
     findAllQueue() {
-        return {
-            queues: this.getQueuesStore()
-        }
+        return this.getQueuesStore()
     }
 
     findOneQueueBy(filter) {
@@ -121,10 +119,10 @@ class QueueManager {
         this.removeQ(name);
         const found = this.findOneQueueBy({field: 'name', value: name});
         if(!_.isObject(found)) {
-            return `Queue with id: ${id} deleted succesfully`
+            return `Queue with name: ${name} deleted succesfully`
         }
         else {
-            return `Queue with id: ${id} not found`
+            return `Queue with name: ${name} not found`
         }
         
     }
