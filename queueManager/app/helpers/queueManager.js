@@ -17,24 +17,44 @@ class QueueManager {
     // Private methods
     initProxy(configProxy) {
 
+
+        // Forwarder
+
+        // When the frontend is a ZMQ_XSUB socket, and the backend is a ZMQ_XPUB socket, 
+        // the proxy shall act as a message forwarder that collects messages from a set of publishers and forwards these to a set of subscribers. 
+        // This may be used to bridge networks transports, e.g. read on tcp:// and forward on pgm://.
+        // source: http://api.zeromq.org/4-2:zmq-proxy
+
         if(configProxy.mode === 'xsub/xpub') {
-            var subSock = zmq.socket('xsub');
-            subSock.identity = 'subscriber' + process.pid;
-            subSock.bindSync(configProxy.subListener);
 
-            var pubSock = zmq.socket('xpub');
-            pubSock.identity = 'publisher' + process.pid;
-            pubSock.setsockopt(zmq.ZMQ_SNDHWM, configProxy.hwm);
+            // Create de xsub socket, identity and connect it
+            var xsubSock = zmq.socket('xsub');
+            xsubSock.identity = 'subscriber' + process.pid;
+            xsubSock.bindSync(configProxy.subListener);
 
-            pubSock.setsockopt(zmq.ZMQ_XPUB_VERBOSE, configProxy.verbose);
-            pubSock.bindSync(configProxy.pubListener);
-            subSock.on('message', (topic, msg) => {
-				pubSock.send([topic, msg]);
-			});
-            pubSock.on('message', (data, bla) => {
+            // Create de xpub socket, identity and connect it
+            var xpubSock = zmq.socket('xpub');
+            xpubSock.identity = 'publisher' + process.pid;
+            // Set Hight water mark: HWM,
+            // This tells us how many messages we want ZeroMQ to buffer in RAM before blocking the 'pushing' socket.
+            xpubSock.setsockopt(zmq.ZMQ_SNDHWM, configProxy.hwm);
+            // Set Verbose mode,
+            // This allow us enable/disable verbose tracing of commands and activity
+            xpubSock.setsockopt(zmq.ZMQ_XPUB_VERBOSE, configProxy.verbose);
+            xpubSock.bindSync(configProxy.pubListener);
+
+            // Set Listener for xsub
+            xsubSock.on('message', (topic, msg) => {
+				xpubSock.send([topic, msg]);
+            });
+
+            // Set Listener for xpub
+            xpubSock.on('message', (data, bla) => {
+                
                 var type = data[0]===0 ? 'unsubscribe' : 'subscribe';
                 var topic = data.slice(1).toString();
-
+                
+                // Store messages as jobs in the BeeQueue by topic, 1 topic <---> 1 beeQueue
                 let beeQFound = this.findOneQueueBy({field: 'name', value: topic});
                 if(!beeQFound) {
                     beeQFound = this.createQueue({name: topic});
@@ -42,7 +62,8 @@ class QueueManager {
                 this.createJob(beeQFound, data);
                 
                 console.log(`Type: ${type} : ${topic}`);
-                subSock.send(data);
+                xsubSock.send(data);
+
 				//TODO quitar elemento de la cola
             }); 
         }
