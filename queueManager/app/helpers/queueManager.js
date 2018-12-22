@@ -42,17 +42,19 @@ class QueueManager {
             // This allow us enable/disable verbose tracing of commands and activity
             xpubSock.setsockopt(zmq.ZMQ_XPUB_VERBOSE, configProxy.verbose);
             xpubSock.bindSync(configProxy.pubListener);
-
+			
+			var ackSubSock = zmq.socket('sub');
+			ackSubSock.subscribe('A');
+			ackSubSock.bind('tcp://127.0.0.1:5559');
+			
             // Set Listener for xsub
             xsubSock.on('message', (topic, msg) => {
-
                 // Store messages as jobs in the BeeQueue by topic, 1 topic <---> 1 beeQueue
                 let beeQFound = this.findOneQueueBy({field: 'name', value: topic});
                 if(!beeQFound) {
                     beeQFound = this.createQueue({name: topic});
                 }
-                this.createJob(beeQFound, msg.toString('utf8'));
-                xpubSock.send([topic, msg]);
+                this.createJob(beeQFound, msg.toString('utf8'), topic, xpubSock);
             });
 
             // Set Listener for xpub
@@ -64,7 +66,12 @@ class QueueManager {
                 xsubSock.send(data);
                 //TODO quitar elemento de la cola
             }); 
-        }
+        
+			// Set Listener for ACK Receiver
+			ackSubSock.on('message', function(topic, msg) {
+                console.log('msg: ' + msg);
+            });
+		}
         else {
             console.log('...WIP...')
         }
@@ -145,8 +152,11 @@ class QueueManager {
         }
         
     }
-
-    createJob(beeQ, msg) {
+	padJobId(jobId){
+		var result = "00000000" + jobId;
+		return result.substr(result.length - 8);
+	}
+    createJob(beeQ, msg, topic, xpubSock) {
         const job = beeQ.createJob({msg: msg});
         job
             .timeout(3000)
@@ -154,6 +164,7 @@ class QueueManager {
             .save()
             .then((job) => {
                 // job enqueued, job.id populated
+				xpubSock.send([topic, this.padJobId(job.id) + msg]);
             });
     }
 }

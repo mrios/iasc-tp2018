@@ -12,15 +12,17 @@ class ConsumerGenerator {
 
     createConsumers(configConsumers, index) {
         const consumer = zmq.socket(configConsumers.mode);
-        
+        const ackPubSock = zmq.socket('pub');
         consumer.identity = `Consumer-${index}`;
         
         if(configConsumers.mode === 'sub') {
             consumer.connect(configConsumers.host);
             consumer.subscribe(this.getRandomTopic(configConsumers.topics));
             consumer.subscribe(this.getRandomTopic(configConsumers.topics));
+			ackPubSock.connect('tcp://127.0.0.1:5559');
             consumer.on('message', function(topic, msg) {
-                console.log(`Consumer-${index}, Received Topic: ${topic}, msg: ${msg}`)
+				ackPubSock.send(['A', index]);
+                console.log(`Consumer-${index}, Received Topic: ${topic}, msg: ${msg}`);
             });
         }
         else {

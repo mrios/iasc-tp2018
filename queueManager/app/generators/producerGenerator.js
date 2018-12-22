@@ -12,13 +12,11 @@ class ProducerGenerator {
 
     createProducers(configProducers, index) {
         const producer = zmq.socket(configProducers.mode);
-        
         producer.identity = `Producer-${index}`;
         
         if(configProducers.mode === 'pub') {
             producer.connect(configProducers.host);
             console.log(`${producer.identity} bound to ${configProducers.host}!`);
-        
             setInterval(() => {
                 const topic = this.getRandomTopic(configProducers.topics)
                 , msg = `The magical number is: ${Math.random()*1000}`;

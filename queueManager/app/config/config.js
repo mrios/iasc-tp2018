@@ -10,7 +10,7 @@ module.exports = {
             mode: 'pub',
             host: 'tcp://127.0.0.1:5556',
             topics: ['A', 'B', 'C'],
-            interval: 10000
+            interval: 1000
         },
         consumers: {
             numConsumers: 3,
