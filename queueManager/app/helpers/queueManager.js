@@ -44,8 +44,8 @@ class QueueManager {
             xpubSock.bindSync(configProxy.pubListener);
 			
 			var ackSubSock = zmq.socket('sub');
-			ackSubSock.subscribe('A');
-			ackSubSock.bind('tcp://127.0.0.1:5559');
+			ackSubSock.subscribe('');
+			ackSubSock.bind(configProxy.ackHost);
 			
             // Set Listener for xsub
             xsubSock.on('message', (topic, msg) => {
@@ -58,8 +58,7 @@ class QueueManager {
             });
 
             // Set Listener for xpub
-            xpubSock.on('message', (data, bla) => {
-                
+            xpubSock.on('message', (data, bla) => {                
                 var type = data[0]===0 ? 'unsubscribe' : 'subscribe';
                 var topic = data.slice(1).toString();
                 console.log(`Type: ${type} : ${topic}`);
@@ -70,7 +69,9 @@ class QueueManager {
 			// Set Listener for ACK Receiver
 			ackSubSock.on('message', function(topic, msg) {
 				var jobId = msg.toString().substr(0,8);
-				var consumerId = msg.toString().substr(8);
+                var consumerId = msg.toString().substr(8);
+                console.log('jobId', jobId)
+                console.log('consumerId', consumerId)
             });
 		}
         else {
@@ -153,10 +154,12 @@ class QueueManager {
         }
         
     }
+
 	padJobId(jobId){
 		var result = "00000000" + jobId;
 		return result.substr(result.length - 8);
-	}
+    }
+    
     createJob(beeQ, msg, topic, xpubSock) {
         const job = beeQ.createJob({msg: msg});
         job

@@ -16,14 +16,16 @@ module.exports = {
             numConsumers: 3,
             mode: 'sub',
             host: 'tcp://127.0.0.1:5555',
-            topics: ['A', 'B', 'C']
+            topics: ['A', 'B', 'C'],
+            ackHost: 'tcp://127.0.0.1:5559'
         },
         proxy: {
             mode: 'xsub/xpub',
             pubListener: 'tcp://127.0.0.1:5555',
             subListener: 'tcp://127.0.0.1:5556',
             hwm: 1000,
-            verbose: 0
+            verbose: 0,
+            ackHost: 'tcp://127.0.0.1:5559'
         }
     },
     // Working mode push/sull

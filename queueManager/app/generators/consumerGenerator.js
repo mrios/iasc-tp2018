@@ -16,13 +16,13 @@ class ConsumerGenerator {
         consumer.identity = `Consumer-${index}`;
         
         if(configConsumers.mode === 'sub') {
+            const topic = this.getRandomTopic(configConsumers.topics);
             consumer.connect(configConsumers.host);
-            consumer.subscribe(this.getRandomTopic(configConsumers.topics));
-            consumer.subscribe(this.getRandomTopic(configConsumers.topics));
-			ackPubSock.connect('tcp://127.0.0.1:5559');
+            consumer.subscribe(topic);
+			ackPubSock.connect(configConsumers.ackHost);
             consumer.on('message', function(topic, msg) {
 				var jobId = msg.toString().substr(0,8);
-				ackPubSock.send(['A', jobId + consumer.identity]);
+				ackPubSock.send([topic, jobId + consumer.identity]);
                 console.log(`Consumer-${index}, Received Topic: ${topic}, msg: ${msg}`);
             });
         }
