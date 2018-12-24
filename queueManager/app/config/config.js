@@ -8,24 +8,30 @@ module.exports = {
         producers: {
             numProducers: 3,
             mode: 'pub',
-            host: 'tcp://127.0.0.1:5556',
+            host: 'tcp://127.0.0.1:1556',
             topics: ['A', 'B', 'C'],
-            interval: 1000
+            interval: 1000,
+            cliColor: '#00FFFF'
         },
         consumers: {
             numConsumers: 3,
             mode: 'sub',
-            host: 'tcp://127.0.0.1:5555',
+            host: 'tcp://127.0.0.1:1555',
             topics: ['A', 'B', 'C'],
-            ackHost: 'tcp://127.0.0.1:5559'
+            reqHost: 'tcp://127.0.0.1:1558',
+            ackHost: 'tcp://127.0.0.1:1559',
+            cliColor: '#00FF00'
         },
         proxy: {
             mode: 'xsub/xpub',
-            pubListener: 'tcp://127.0.0.1:5555',
-            subListener: 'tcp://127.0.0.1:5556',
+            pubListener: 'tcp://127.0.0.1:1555',
+            subListener: 'tcp://127.0.0.1:1556',
             hwm: 1000,
             verbose: 0,
-            ackHost: 'tcp://127.0.0.1:5559'
+            repHost: 'tcp://127.0.0.1:1558',
+            ackHost: 'tcp://127.0.0.1:1559',
+            timeoutFordwarding: 150,
+            cliColor: '#FFFF00'
         }
     },
     // Working mode push/sull
@@ -56,17 +62,6 @@ module.exports = {
             port: 6379,
             db: 0,
             options: {}
-        },
-        nodes: [
-            {
-                name: 'server1'
-            },
-            {
-                name: 'server2'
-            },
-            {
-                name: 'server3'
-            }
-        ]
+        }
     }
 }
