@@ -17,6 +17,7 @@
     "lodash": "^4.17.10"
   },
   "dependencies": {
-    "bull-arena": "^2.5.2"
+    "bull-arena": "^2.5.2",
+    "chalk": "^2.4.1"
   }
 }
