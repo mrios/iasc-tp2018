@@ -10,8 +10,12 @@ class QueueManager {
     init(config) {
         let cliColor = ''
         let queueStore = [];
+        let consumersStore = [];
+        let jobsStore = [];
         let queueConfig = {};
         this.setQueuesStore([]);
+        this.setConsumersStore([]);
+        this.setJobsStore([]);
         this.setCliColor(config.queue.proxy.cliColor);
         this.initProxy(config.queue.proxy);
         this.setQueueConfig(config.cluster.redis);
@@ -60,7 +64,6 @@ class QueueManager {
             
             repSyncSock.on('message', (generatedId, emptyDelimiter, consumer, topic) => {
                 this.registerConsumer({
-                    genId: generatedId.toString(),
                     consumer: consumer.toString('utf8'),
                     topic: topic.toString('utf8'),
                 });
@@ -97,7 +100,7 @@ class QueueManager {
 			// Set Listener for ACK Receiver
 			ackSubSock.on('message', (topic, jobId, consumer) => {
 				this.registerACK({
-                    jobId: jobId.toString(),
+                    jobId: jobId.toString('utf8'),
                     consumer: consumer.toString('utf8'),
                     topic: topic.toString('utf8')
                 })
@@ -131,6 +134,7 @@ class QueueManager {
         };
     }
 
+    // Queues Store
     getQueuesStore() {
         return this.queueStore;
     }
@@ -149,10 +153,58 @@ class QueueManager {
         }));
     }
 
+    // Consumers Store
+    getConsumersStore() {
+        return this.consumersStore;
+    }
+
+    setConsumersStore(cs) {
+        this.consumersStore = cs;
+    }
+
+    addC(c) {
+        this.consumersStore.push(c);
+    }
+
+    removeC(name) {
+        this.setConsumersStore(_.reject(this.getConsumersStore(), (o) => {
+            return o.name === name;
+        }));
+    }
+
+    findConsumersByTopic(topic) {
+        return _.filter(this.getConsumersStore(), c => c.topic === topic);
+    }
+
+    // Jobs Store
+    getJobsStore() {
+        return this.jobsStore;
+    }
+
+    setJobsStore(cs) {
+        this.jobsStore = cs;
+    }
+
+    addJ(c) {
+        this.jobsStore.push(c);
+    }
+
+    removeJ(jobId) {
+        this.setJobsStore(_.reject(this.getJobsStore(), (o) => {
+            return o.jobId === jobId;
+        }));
+    }
+
+    findJobById(jobId) {
+        return _.find(this.getJobsStore(), j => j.jobId === jobId);
+    }
+
     // Public methods
     getStatus() {
         return {
-            queues: this.findAllQueue()
+            //queues: this.findAllQueue(),
+            consumers: this.getConsumersStore(),
+            jobs: this.getJobsStore()
         }
     }
 
@@ -199,6 +251,7 @@ class QueueManager {
 
     createJob(beeQ, msg, topic, xpubSock) {
         const job = beeQ.createJob({msg: msg});
+        const consumersByTopic = this.findConsumersByTopic(topic.toString('utf8'));
         job
             .timeout(3000)
             .retries(2)
@@ -206,17 +259,38 @@ class QueueManager {
             .then((job) => {
                 // job enqueued, job.id populated
 				const msgWithId =  this.padJobId(job.id) + msg;
-				xpubSock.send([topic, msgWithId]);
+                xpubSock.send([topic, msgWithId]);
+                this.registerJob({job:job, topic: topic.toString('utf8'), consumers: consumersByTopic});
             });
-
+        
         job.on('progress', (progress) => {
             this.log(`Job ${job.id} reported progress: page ${progress.page} / ${progress.totalPages}`);
         });
     }
 
-    registerConsumer({genId, consumer, topic}) {
-        // TODO Register consumer for given topic in beeQ-manager
-        this.log(`Consumer Registered`, [genId, consumer, topic]);
+    registerConsumer(data) {
+        this.addC(data);
+        this.log(`Consumer <${data.consumer}> Registered!`);
+    }
+
+    registerJob({job, topic, consumers}) {
+        this.addJ({
+            jobId: job.id,
+            topic: topic,
+            consumers: _.reduce(consumers,
+                (result, value, key) => {
+                    //const name = c.name
+                    let consumer = {
+                        [value.consumer]: false
+                    }
+
+                    _.assign(result, consumer);
+                    return result
+                },
+                {}
+            ),
+            pending: true
+        });
     }
 
     registerACK({jobId, consumer, topic}) {
@@ -230,14 +304,17 @@ class QueueManager {
                 beeQ: found.beeQ
             }
 
-            this.markConsumedBy(data);
-            if(this.canRemove(data)) {
-                // TODO: process after check, this operation can be executed only once
+            let job = this.markJobConsumedBy(data);
+            if(!job.pending) {
+                this.log(`---- Removing Job ---- ${JSON.stringify(job)}`, '#FF0000')
+                this.removeJob(data);
+                this.removeJ(data.jobId);
                 // data.beeQ.process(async (job) => {
                 //     this.log(`Processing job ${job.id}, msg: ${job.data.msg}`);
+                //     this.removeJob(data);
+                //     this.removeJ(data.jobId);
                 //     return job.data.msg;
                 // });
-                this.removeJob(data);
             }
         }
         else {
@@ -246,14 +323,30 @@ class QueueManager {
 
     }
 
-    markConsumedBy({jobId, consumer, beeQ}) {
-        // TODO: mark jobId consumed by consumer in beeQ-manager
-        this.log(`The job: ${jobId} was consumed by: ${consumer}`);
+    markJobConsumedBy({jobId, consumer, beeQ}) {
+        const found = this.findJobById(jobId);
+        if(found) {
+            this.log(`---- Job status ---- ${JSON.stringify(found)}`, '#FFFF00')
+            found.consumers[consumer] = true;
+            const totalConsumed = _.values(found.consumers).filter(function(obj) { return obj === true}).length;
+            const totalConsumers = _.values(found.consumers).length;
+            this.log(`Total consumed: ${totalConsumed}`)
+            this.log(`Total consumers: ${totalConsumers}`)
+            this.log(`The job: ${jobId} was consumed by: ${consumer}. Consumed [${totalConsumed}/${totalConsumers}]`);
+
+            if(!_.values(found.consumers).includes(false)) {
+                found.pending = false;
+            }
+        }
+        return found;
     }
 
-    canRemove({jobId, consumer, beeQ}) {
-        // TODO: validate vs consumers by topic register
-        return true;
+    canRemoveJob({jobId, consumer, beeQ}) {
+        const found = this.findJobById(jobId);
+        if(found) {
+            return found.status;
+        }
+        return false;
     }
 
     removeJob({jobId, consumer, beeQ}) {
@@ -266,7 +359,7 @@ class QueueManager {
 
     log(msg, color = null) {
         const hexa = _.isString(color) ? color : this.getCliColor();
-        console.log(chalk.hex(hexa)(msg));
+        console.log(chalk.hex(hexa)(`--| |-- ${msg}`));
     }
 
 }
