@@ -13,11 +13,18 @@ Technoligies:
 
 # Usage
 
-First run Redis Server
-
-Go to /queueManager/app
-
+1. First run Redis Server
+2. Go to main directory
+```cd queueManager/app```
+3. Install dependencies
 ```npm install```
-```node main.js```
+4. Run application
+```node main.js -m pubSub```
+
+# API web
+
+Server API http://localhost:4000
+
+# Bee-queue Monitor
 
 URL Arena http://0.0.0.0:4567
