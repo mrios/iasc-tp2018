@@ -68,7 +68,7 @@ class ConsumerGenerator {
     }
 
     log(msg) {
-        console.log(chalk.hex(this.getCliColor())(msg));
+        console.log(chalk.hex(this.getCliColor())(`<<| |-- ${msg}`));
     }
 }
 

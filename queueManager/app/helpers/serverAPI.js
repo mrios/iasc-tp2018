@@ -146,7 +146,7 @@ const Server = {
 	});
     // Start server
     server.listen(config.serverAPI.port, () => {
-    	console.log("Listening on port: %d", config.serverAPI.port);
+        console.log(`-- ServerAPI Listening on port: ${config.serverAPI.port}`);
     });
   }
 };
